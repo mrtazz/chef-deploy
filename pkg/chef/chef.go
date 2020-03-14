@@ -40,13 +40,12 @@ func init() {
 	CommandRunner = command.NewEchoingRunner()
 }
 
-// DeployChanges deploy all change in a local repo from the given sha range
-func DeployChanges(from, to git.Ref) (err error) {
+func generateCommands(from, to git.Ref) (ret []string, err error) {
 	knifeCommands := set.New(set.ThreadSafe)
 
 	changes, err := git.GetDiff(from, to)
 	if err != nil {
-		return err
+		return ret, err
 	}
 
 	for _, c := range changes {
@@ -77,10 +76,33 @@ func DeployChanges(from, to git.Ref) (err error) {
 		}
 	}
 
-	knifeCommandFailed := false
-
 	commands := set.StringSlice(knifeCommands)
 	sort.Strings(commands)
+	return commands, nil
+
+}
+
+// PreviewChanges show changes that would be applied
+func PreviewChanges(from, to git.Ref) (err error) {
+	commands, err := generateCommands(from, to)
+	if err != nil {
+		return err
+	}
+
+	for _, cmd := range commands {
+		fmt.Println(cmd)
+	}
+	return nil
+}
+
+// DeployChanges deploy all change in a local repo from the given sha range
+func DeployChanges(from, to git.Ref) (err error) {
+	knifeCommandFailed := false
+
+	commands, err := generateCommands(from, to)
+	if err != nil {
+		return err
+	}
 
 	for _, cmd := range commands {
 		_, _, err := CommandRunner.Run(cmd)

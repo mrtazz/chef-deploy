@@ -13,7 +13,8 @@ var (
 	usage = `chef-deploy.
 
   Usage:
-  chef-deploy --from=<from> --to=<to> [options]
+  chef-deploy deploy --from=<from> --to=<to> [options]
+  chef-deploy preview --from=<from> --to=<to> [options]
   chef-deploy -h | --help
   chef-deploy --version
 
@@ -35,16 +36,32 @@ func main() {
 		log.Fatal(err)
 	}
 
+	log.Println(args)
+
+	os.Exit(1)
+
 	if args["--knife-executable"] != nil {
 		chef.KnifeExecutable = args["--knife-executable"].(string)
 	}
 
-	err = chef.DeployChanges(git.Ref(args["--from"].(string)),
-		git.Ref(args["--to"].(string)))
+	if args["preview"].(bool) {
+		err = chef.PreviewChanges(git.Ref(args["--from"].(string)),
+			git.Ref(args["--to"].(string)))
 
-	if err != nil {
-		log.Println(err.Error())
-		os.Exit(1)
+		if err != nil {
+			log.Println(err.Error())
+			os.Exit(1)
+		}
+	}
+
+	if args["deploy"].(bool) {
+		err = chef.DeployChanges(git.Ref(args["--from"].(string)),
+			git.Ref(args["--to"].(string)))
+
+		if err != nil {
+			log.Println(err.Error())
+			os.Exit(1)
+		}
 	}
 
 }
