@@ -1,5 +1,7 @@
 # chef-deploy
 
+![CI](https://github.com/mrtazz/chef-deploy/workflows/CI/badge.svg)
+
 A tool to deploy to chef based on a git diff
 
 
