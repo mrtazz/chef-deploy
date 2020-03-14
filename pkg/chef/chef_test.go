@@ -22,7 +22,7 @@ func (f fakeGitRunner) Run(cmd string) (string, string, error) {
 	M chef/cookbooks/homedirs/recipes/mrtazz.rb
 	M chef/cookbooks/homedirs/attributes/mrtazz.rb
 	M chef/cookbooks/homedirs/recipes/mrtazz.rb
-	M chef/cookbooks/jarvis/attributes/default.rb
+	M chef/cookbooks/chef-deploy/attributes/default.rb
 	M chef/cookbooks/jenkins/recipes/chef_keys.rb
 	M chef/cookbooks/nginx/recipes/pkgng.rb
 	M chef/data_bags/chef-keys/friday.json
@@ -50,7 +50,7 @@ func TestDeployChanges(t *testing.T) {
 	assert.Equal(t, len(RanCommands), 10)
 	expectedRanCommands := []string{
 		"knife cookbook upload homedirs",
-		"knife cookbook upload jarvis",
+		"knife cookbook upload chef-deploy",
 		"knife cookbook upload jenkins",
 		"knife cookbook upload nginx",
 		"knife data bag -y delete chef-keys bla",
@@ -82,7 +82,7 @@ func TestDeployChangesWithDifferentKnifeExecutable(t *testing.T) {
 
 	expectedRanCommands := []string{
 		"/opt/chef/bin/knife cookbook upload homedirs",
-		"/opt/chef/bin/knife cookbook upload jarvis",
+		"/opt/chef/bin/knife cookbook upload chef-deploy",
 		"/opt/chef/bin/knife cookbook upload jenkins",
 		"/opt/chef/bin/knife cookbook upload nginx",
 		"/opt/chef/bin/knife data bag -y delete chef-keys bla",

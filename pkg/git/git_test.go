@@ -9,12 +9,12 @@ var flagtests = []struct {
 	in  string
 	out string
 }{
-	{"git@github.com:mrtazz/jarvis.git", "mrtazz/jarvis"},
-	{"https://github.com/mrtazz/jarvis.git", "mrtazz/jarvis"},
-	{"git://github.com/mrtazz/jarvis.git", "mrtazz/jarvis"},
-	{"git@github.com:mrtazz/jarvis", "mrtazz/jarvis"},
-	{"https://github.com/mrtazz/jarvis", "mrtazz/jarvis"},
-	{"git://github.com/mrtazz/jarvis", "mrtazz/jarvis"},
+	{"git@github.com:mrtazz/chef-deploy.git", "mrtazz/chef-deploy"},
+	{"https://github.com/mrtazz/chef-deploy.git", "mrtazz/chef-deploy"},
+	{"git://github.com/mrtazz/chef-deploy.git", "mrtazz/chef-deploy"},
+	{"git@github.com:mrtazz/chef-deploy", "mrtazz/chef-deploy"},
+	{"https://github.com/mrtazz/chef-deploy", "mrtazz/chef-deploy"},
+	{"git://github.com/mrtazz/chef-deploy", "mrtazz/chef-deploy"},
 }
 
 func TestGetConfigKeyFromSection(t *testing.T) {
