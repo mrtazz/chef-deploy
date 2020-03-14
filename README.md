@@ -9,7 +9,8 @@ A tool to deploy to chef based on a git diff
 chef-deploy.
 
   Usage:
-  chef-deploy --from=<from> --to=<to> [options]
+  chef-deploy deploy --from=<from> --to=<to> [options]
+  chef-deploy preview --from=<from> --to=<to> [options]
   chef-deploy -h | --help
   chef-deploy --version
 
