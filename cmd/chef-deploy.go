@@ -36,10 +36,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Println(args)
-
-	os.Exit(1)
-
 	if args["--knife-executable"] != nil {
 		chef.KnifeExecutable = args["--knife-executable"].(string)
 	}
