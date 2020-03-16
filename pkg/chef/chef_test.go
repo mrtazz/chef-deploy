@@ -20,6 +20,7 @@ func (f fakeGitRunner) Run(cmd string) (string, string, error) {
 	return `M Jenkinsfile
 	M chef/Jenkinsfile
 	M chef/cookbooks/chef-deploy/attributes/default.rb
+	D chef/cookbooks/deleted/metadata.rb
 	M chef/cookbooks/homedirs/recipes/mrtazz.rb
 	M chef/cookbooks/homedirs/attributes/mrtazz.rb
 	M chef/cookbooks/homedirs/recipes/mrtazz.rb
@@ -47,8 +48,9 @@ func TestDeployChanges(t *testing.T) {
 
 	sort.Strings(RanCommands)
 
-	assert.Equal(t, len(RanCommands), 10)
+	assert.Equal(t, len(RanCommands), 11)
 	expectedRanCommands := []string{
+		"knife cookbook delete deleted",
 		"knife cookbook upload chef-deploy",
 		"knife cookbook upload homedirs",
 		"knife cookbook upload jenkins",
@@ -78,9 +80,10 @@ func TestDeployChangesWithDifferentKnifeExecutable(t *testing.T) {
 
 	sort.Strings(RanCommands)
 
-	assert.Equal(t, len(RanCommands), 10)
+	assert.Equal(t, len(RanCommands), 11)
 
 	expectedRanCommands := []string{
+		"/opt/chef/bin/knife cookbook delete deleted",
 		"/opt/chef/bin/knife cookbook upload chef-deploy",
 		"/opt/chef/bin/knife cookbook upload homedirs",
 		"/opt/chef/bin/knife cookbook upload jenkins",

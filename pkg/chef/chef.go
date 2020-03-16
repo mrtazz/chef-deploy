@@ -17,10 +17,8 @@ var (
 	KnifeExecutable     = "knife"
 	knifeCommandLookups = map[string]map[int]string{
 		"cookbook": {
-			git.DiffAdded: "%s cookbook upload %s",
-			// this prevents a file in the cookbook being deleted triggering a whole
-			// cookbook deletion. TODO: figure out how to do cookbook deletions
-			git.DiffDeleted:  "%s cookbook upload %s",
+			git.DiffAdded:    "%s cookbook upload %s",
+			git.DiffDeleted:  "%s cookbook delete %s",
 			git.DiffModified: "%s cookbook upload %s",
 		},
 		"roles": {
@@ -53,8 +51,15 @@ func generateCommands(from, to git.Ref) (ret []string, err error) {
 		if len(parts) > 0 && parts[0] == "chef" {
 			switch parts[1] {
 			case "cookbooks":
-				knifeCommands.Add(fmt.Sprintf(knifeCommandLookups["cookbook"][c.Mode],
-					KnifeExecutable, parts[2]))
+				if c.Mode == git.DiffDeleted {
+					if strings.Contains(c.File, "metadata") {
+						knifeCommands.Add(fmt.Sprintf(knifeCommandLookups["cookbook"][c.Mode],
+							KnifeExecutable, parts[2]))
+					}
+				} else {
+					knifeCommands.Add(fmt.Sprintf(knifeCommandLookups["cookbook"][c.Mode],
+						KnifeExecutable, parts[2]))
+				}
 			case "data_bags":
 				bagitem := c.File
 				if c.Mode == git.DiffDeleted {
