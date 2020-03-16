@@ -50,7 +50,7 @@ func TestDeployChanges(t *testing.T) {
 
 	assert.Equal(t, len(RanCommands), 11)
 	expectedRanCommands := []string{
-		"knife cookbook delete deleted",
+		"knife cookbook -ay delete deleted",
 		"knife cookbook upload chef-deploy",
 		"knife cookbook upload homedirs",
 		"knife cookbook upload jenkins",
@@ -83,7 +83,7 @@ func TestDeployChangesWithDifferentKnifeExecutable(t *testing.T) {
 	assert.Equal(t, len(RanCommands), 11)
 
 	expectedRanCommands := []string{
-		"/opt/chef/bin/knife cookbook delete deleted",
+		"/opt/chef/bin/knife cookbook -ay delete deleted",
 		"/opt/chef/bin/knife cookbook upload chef-deploy",
 		"/opt/chef/bin/knife cookbook upload homedirs",
 		"/opt/chef/bin/knife cookbook upload jenkins",
