@@ -18,7 +18,7 @@ var (
 	knifeCommandLookups = map[string]map[int]string{
 		"cookbook": {
 			git.DiffAdded:    "%s cookbook upload %s",
-			git.DiffDeleted:  "%s cookbook delete %s",
+			git.DiffDeleted:  "%s cookbook -y delete %s",
 			git.DiffModified: "%s cookbook upload %s",
 		},
 		"roles": {
