@@ -13,6 +13,8 @@ import (
 var (
 	// CommandRunner is the interface to run commands
 	CommandRunner command.Runner
+	// Subdirectory can be set to strip prefixes from git paths
+	Subdirectory = ""
 	// KnifeExecutable holds the full path to the knife command
 	KnifeExecutable     = "knife"
 	knifeCommandLookups = map[string]map[int]string{
@@ -67,7 +69,7 @@ func generateCommands(from, to git.Ref) (ret []string, err error) {
 					bagitem = strings.Replace(bagitem, ".json", "", -1)
 				}
 				knifeCommands.Add(fmt.Sprintf(knifeCommandLookups["data_bags"][c.Mode],
-					KnifeExecutable, parts[2], bagitem))
+					KnifeExecutable, parts[2], stripPrefixMaybe(bagitem)))
 			case "roles":
 				roleitem := c.File
 				if c.Mode == git.DiffDeleted {
@@ -76,7 +78,7 @@ func generateCommands(from, to git.Ref) (ret []string, err error) {
 					roleitem = strings.Replace(roleitem, ".rb", "", -1)
 				}
 				knifeCommands.Add(fmt.Sprintf(knifeCommandLookups["roles"][c.Mode],
-					KnifeExecutable, roleitem))
+					KnifeExecutable, stripPrefixMaybe(roleitem)))
 			}
 		}
 	}
@@ -119,4 +121,20 @@ func DeployChanges(from, to git.Ref) (err error) {
 		return fmt.Errorf("One or more knife commands failed.")
 	}
 	return nil
+}
+
+func stripPrefixMaybe(filepath string) string {
+	if Subdirectory == "" {
+		return filepath
+	}
+
+	if !strings.HasSuffix(Subdirectory, "/") {
+		Subdirectory = fmt.Sprintf("%s/", Subdirectory)
+	}
+
+	if strings.HasPrefix(filepath, Subdirectory) {
+		return strings.Replace(filepath, Subdirectory, "", 1)
+	}
+
+	return filepath
 }

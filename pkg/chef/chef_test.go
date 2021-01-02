@@ -69,11 +69,76 @@ func TestDeployChanges(t *testing.T) {
 
 }
 
+func TestDeployChangesWithSubdirectory(t *testing.T) {
+	git.CommandRunner = fakeGitRunner{}
+	RanCommands = make([]string, 0, 10)
+	CommandRunner = fakeTestRunner
+
+	Subdirectory = "chef"
+
+	DeployChanges("HEAD~5", "HEAD")
+
+	sort.Strings(RanCommands)
+
+	assert.Equal(t, len(RanCommands), 11)
+	expectedRanCommands := []string{
+		"knife cookbook -ay delete deleted",
+		"knife cookbook upload chef-deploy",
+		"knife cookbook upload homedirs",
+		"knife cookbook upload jenkins",
+		"knife cookbook upload nginx",
+		"knife data bag -y delete chef-keys bla",
+		"knife data bag -y delete chef-keys blubb",
+		"knife data bag from file chef-keys data_bags/chef-keys/friday.json",
+		"knife data bag from file chef-keys data_bags/chef-keys/friday_keys.json",
+		"knife role -y delete jail",
+		"knife role from file roles/ci.rb",
+	}
+
+	for i := range RanCommands {
+		assert.Equal(t, expectedRanCommands[i], RanCommands[i])
+	}
+
+}
+
+func TestDeployChangesWithSubdirectoryWithSlash(t *testing.T) {
+	git.CommandRunner = fakeGitRunner{}
+	RanCommands = make([]string, 0, 10)
+	CommandRunner = fakeTestRunner
+
+	Subdirectory = "chef/"
+
+	DeployChanges("HEAD~5", "HEAD")
+
+	sort.Strings(RanCommands)
+
+	assert.Equal(t, len(RanCommands), 11)
+	expectedRanCommands := []string{
+		"knife cookbook -ay delete deleted",
+		"knife cookbook upload chef-deploy",
+		"knife cookbook upload homedirs",
+		"knife cookbook upload jenkins",
+		"knife cookbook upload nginx",
+		"knife data bag -y delete chef-keys bla",
+		"knife data bag -y delete chef-keys blubb",
+		"knife data bag from file chef-keys data_bags/chef-keys/friday.json",
+		"knife data bag from file chef-keys data_bags/chef-keys/friday_keys.json",
+		"knife role -y delete jail",
+		"knife role from file roles/ci.rb",
+	}
+
+	for i := range RanCommands {
+		assert.Equal(t, expectedRanCommands[i], RanCommands[i])
+	}
+
+}
+
 func TestDeployChangesWithDifferentKnifeExecutable(t *testing.T) {
 	git.CommandRunner = fakeGitRunner{}
 	RanCommands = make([]string, 0, 10)
 	CommandRunner = fakeTestRunner
 
+	Subdirectory = ""
 	KnifeExecutable = "/opt/chef/bin/knife"
 
 	DeployChanges("HEAD~5", "HEAD")

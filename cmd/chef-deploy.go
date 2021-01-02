@@ -22,6 +22,7 @@ var (
   --from=<from>                 base SHA of the diff to deploy
   --to=<to>                     head SHA of the diff to deploy
   --knife-executable=<knife>    the knife executable to use
+  --subdirectory=<subdirectory> the subdirectory of the repo that contains chef code
   -h --help                     Show this screen.
   --version                     Show version.
 `
