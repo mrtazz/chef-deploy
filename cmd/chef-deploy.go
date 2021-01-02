@@ -41,6 +41,10 @@ func main() {
 		chef.KnifeExecutable = args["--knife-executable"].(string)
 	}
 
+	if args["--subdirectory"] != nil {
+		chef.Subdirectory = args["--subdirectory"].(string)
+	}
+
 	if args["preview"].(bool) {
 		err = chef.PreviewChanges(git.Ref(args["--from"].(string)),
 			git.Ref(args["--to"].(string)))
