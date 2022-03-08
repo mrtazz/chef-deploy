@@ -2,13 +2,12 @@ name: CI
 
 on:
   workflow_dispatch:
-    pull_request:
-      types: [opened, synchronize, labeled]
+  pull_request:
+    types: [opened, synchronize, labeled]
 
 jobs:
 
   build:
-    name: tests
     name: test-go${{ matrix.goversion }}
     runs-on: ubuntu-latest
     strategy:
