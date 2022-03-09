@@ -5,7 +5,7 @@
 VERSION := $(shell git describe --tags --always --dirty)
 GOVERSION := $(shell go version)
 
-GOFLAGS := -mod=vendor
+GOFLAGS :=
 LDFLAGS := -X 'github.com/mrtazz/chef-deploy/pkg/version.version=$(VERSION)' \
            -X 'github.com/mrtazz/chef-deploy/pkg/version.goversion=$(GOVERSION)'
 
