@@ -1,12 +1,11 @@
 package main
 
 import (
-	"github.com/docopt/docopt-go"
-	"github.com/mrtazz/chef-deploy/pkg/chef"
-	"github.com/mrtazz/chef-deploy/pkg/git"
-	"github.com/mrtazz/chef-deploy/pkg/version"
-	"log"
-	"os"
+//"github.com/docopt/docopt-go"
+//"github.com/mrtazz/chef-deploy/pkg/git"
+//"github.com/mrtazz/chef-deploy/pkg/version"
+//"log"
+//"os"
 )
 
 var (
@@ -31,38 +30,38 @@ var (
 )
 
 func main() {
-	args, err := docopt.Parse(usage, nil, true,
-		version.GetDocoptVersionString("chef-deploy"), false)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if args["--knife-executable"] != nil {
-		chef.KnifeExecutable = args["--knife-executable"].(string)
-	}
-
-	if args["--subdirectory"] != nil {
-		chef.Subdirectory = args["--subdirectory"].(string)
-	}
-
-	if args["preview"].(bool) {
-		err = chef.PreviewChanges(git.Ref(args["--from"].(string)),
-			git.Ref(args["--to"].(string)))
-
-		if err != nil {
-			log.Println(err.Error())
-			os.Exit(1)
-		}
-	}
-
-	if args["deploy"].(bool) {
-		err = chef.DeployChanges(git.Ref(args["--from"].(string)),
-			git.Ref(args["--to"].(string)))
-
-		if err != nil {
-			log.Println(err.Error())
-			os.Exit(1)
-		}
-	}
+	//	args, err := docopt.Parse(usage, nil, true,
+	//		version.GetDocoptVersionString("chef-deploy"), false)
+	//	if err != nil {
+	//		log.Fatal(err)
+	//	}
+	//
+	//	if args["--knife-executable"] != nil {
+	//		chef.KnifeExecutable = args["--knife-executable"].(string)
+	//	}
+	//
+	//	if args["--subdirectory"] != nil {
+	//		chef.Subdirectory = args["--subdirectory"].(string)
+	//	}
+	//
+	//	if args["preview"].(bool) {
+	//		err = chef.PreviewChanges(git.Ref(args["--from"].(string)),
+	//			git.Ref(args["--to"].(string)))
+	//
+	//		if err != nil {
+	//			log.Println(err.Error())
+	//			os.Exit(1)
+	//		}
+	//	}
+	//
+	//	if args["deploy"].(bool) {
+	//		err = chef.DeployChanges(git.Ref(args["--from"].(string)),
+	//			git.Ref(args["--to"].(string)))
+	//
+	//		if err != nil {
+	//			log.Println(err.Error())
+	//			os.Exit(1)
+	//		}
+	//	}
 
 }

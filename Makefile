@@ -9,25 +9,20 @@ GOFLAGS := -mod=vendor
 LDFLAGS := -X 'github.com/mrtazz/chef-deploy/pkg/version.version=$(VERSION)' \
            -X 'github.com/mrtazz/chef-deploy/pkg/version.goversion=$(GOVERSION)'
 
+.PHONY: build
 build:
 	go build $(GOFLAGS) -ldflags "$(LDFLAGS)" cmd/chef-deploy.go
 
-vendor:
-	go mod vendor
-
+.PHONY: test
 test:
-	go test $(GOFLAGS) -v $$(go list $(GOFLAGS) ./... | grep -v /cmd/)
+	go test $(GOFLAGS) -v ./...
 
+.PHONY: coverage
 coverage:
-	@echo "mode: set" > cover.out
-	@for package in $(PACKAGES); do \
-		if ls $${package}/*.go &> /dev/null; then  \
-		go test $(GOFLAGS) -coverprofile=$${package}/profile.out $${package}; fi; \
-		if test -f $${package}/profile.out; then \
-		cat $${package}/profile.out | grep -v "mode: set" >> cover.out; fi; \
-	done
-	@-go tool $(GOFLAGS) cover -html=cover.out -o cover.html
+	go test $(GOFLAGS) -coverprofile=cover.out ./...
+	go tool $(GOFLAGS) cover -html=cover.out -o cover.html
 
+.PHONY: benchmark
 benchmark:
 	@echo "Running tests..."
 	@go test $(GOFLAGS) -bench=. ${NAME}

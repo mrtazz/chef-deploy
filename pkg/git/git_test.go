@@ -1,6 +1,7 @@
 package git
 
 import (
+	"github.com/mrtazz/chef-deploy/pkg/deploy"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -41,17 +42,22 @@ func (f fakeRunner) Run(cmd string) (string, string, error) {
 }
 
 func TestGetDiff(t *testing.T) {
-	CommandRunner = fakeRunner{}
+	cmd := fakeRunner{}
+	d := &Differ{
+		to:   "HEAD",
+		from: "HEAD~5",
+		cmd:  cmd,
+	}
 
-	diff, err := GetDiff("HEAD~5", "HEAD")
+	diff, err := d.Diff()
 
 	assert.Equal(t, nil, err)
 	assert.Equal(t, 10, len(diff))
 	assert.Equal(t, "command/command.go", diff[0].File)
-	assert.Equal(t, DiffModified, diff[0].Mode)
+	assert.Equal(t, deploy.ResourceModified, diff[0].Type)
 	assert.Equal(t, "foo/bla.go", diff[8].File)
-	assert.Equal(t, DiffAdded, diff[8].Mode)
+	assert.Equal(t, deploy.ResourceAdded, diff[8].Type)
 	assert.Equal(t, "bla/foo.go", diff[9].File)
-	assert.Equal(t, DiffDeleted, diff[9].Mode)
+	assert.Equal(t, deploy.ResourceDeleted, diff[9].Type)
 
 }

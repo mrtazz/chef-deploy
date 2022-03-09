@@ -5,47 +5,24 @@ package git
 import (
 	"fmt"
 	"github.com/mrtazz/chef-deploy/pkg/command"
+	"github.com/mrtazz/chef-deploy/pkg/deploy"
 	"strings"
 )
 
 type (
 	// Ref is a git ref
 	Ref string
-
-	// Diff is a single file change
-	Diff struct {
-		Mode int
-		File string
-	}
 )
-
-const (
-	// DiffAdded represents the status of a file being added in a git diff
-	DiffAdded = iota
-	// DiffDeleted represents the status of a file being deleted in a diff
-	DiffDeleted
-	// DiffModified represents the status of a file being modified in a diff
-	DiffModified
-)
-
-var (
-	// CommandRunner is the helper interface to run commands off of
-	CommandRunner command.Runner
-)
-
-func init() {
-	CommandRunner = command.DefaultRunner{}
-}
 
 // GetRepoRoot provides a simple
 func GetRepoRoot() (string, error) {
-	stdout, _, err := CommandRunner.Run("git rev-parse --show-toplevel")
+	stdout, _, err := command.DefaultRunner{}.Run("git rev-parse --show-toplevel")
 	return stdout, err
 }
 
 // GetOrigin returns the url of the remote origin
 func GetOrigin() (string, error) {
-	stdout, _, err := CommandRunner.Run("git config --get remote.origin.url")
+	stdout, _, err := command.DefaultRunner{}.Run("git config --get remote.origin.url")
 	return stdout, err
 }
 
@@ -82,10 +59,34 @@ func GetSlugForRepo() (string, error) {
 	return GetSlug(origin)
 }
 
-// GetDiff returns a list of files in a diff
-func GetDiff(from, to Ref) ([]Diff, error) {
-	ret := make([]Diff, 0, 10)
-	stdout, stderr, err := CommandRunner.Run(fmt.Sprintf("git diff --name-status %s...%s", from, to))
+// Differ implements the deploy.Differ interface for git
+type Differ struct {
+	from, to Ref
+	cmd      command.Runner
+}
+
+// NewDiffer returns a new git differ
+func NewDiffer(from, to Ref) *Differ {
+	return &Differ{
+		to:   to,
+		from: from,
+		cmd:  command.DefaultRunner{},
+	}
+}
+
+// WithRunner returns a differ with the configured runner
+func (d *Differ) WithRunner(cmd command.Runner) *Differ {
+	return &Differ{
+		to:   d.to,
+		from: d.from,
+		cmd:  cmd,
+	}
+}
+
+// Diff implements the deploy.Differ interface
+func (d *Differ) Diff() ([]deploy.Change, error) {
+	ret := make([]deploy.Change, 0, 10)
+	stdout, stderr, err := d.cmd.Run(fmt.Sprintf("git diff --name-status %s...%s", d.from, d.to))
 	if err != nil {
 		return ret, fmt.Errorf("%s: %s", err.Error(), stderr)
 	}
@@ -100,15 +101,15 @@ func GetDiff(from, to Ref) ([]Diff, error) {
 			mode := -1
 			switch strings.TrimSpace(lineParts[0]) {
 			case "A":
-				mode = DiffAdded
+				mode = deploy.ResourceAdded
 			case "D":
-				mode = DiffDeleted
+				mode = deploy.ResourceDeleted
 			case "M":
-				mode = DiffModified
+				mode = deploy.ResourceModified
 			}
 
 			ret = append(ret,
-				Diff{Mode: mode, File: filename})
+				deploy.Change{Type: mode, File: filename})
 		}
 	}
 
