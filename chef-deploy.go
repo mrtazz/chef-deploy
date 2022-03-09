@@ -12,13 +12,15 @@ var (
 	version   = "unknown"
 	goversion = "unknown"
 	cli       struct {
-		From            string `help:"start ref for generating changes diff"`
-		To              string `help:"end ref for generating changes diff"`
 		Subdirectory    string `help:"subdirectory where chef code is located"`
 		KnifeExecutable string `help:"the knife executable to use"`
 		Deploy          struct {
+			From string `required:"" help:"start ref for generating changes diff"`
+			To   string `required:"" help:"end ref for generating changes diff"`
 		} `cmd:"" help:"deploy changes."`
 		Preview struct {
+			From string `required:"" help:"start ref for generating changes diff"`
+			To   string `required:"" help:"end ref for generating changes diff"`
 		} `cmd:"" help:"preview deploy changes but don't deploy."`
 		Version struct {
 		} `cmd:"" help:"print version and exit."`
@@ -29,7 +31,7 @@ func main() {
 	ctx := kong.Parse(&cli)
 	switch ctx.Command() {
 	case "deploy":
-		differ := git.NewDiffer(git.Ref(cli.From), git.Ref(cli.To))
+		differ := git.NewDiffer(git.Ref(cli.Deploy.From), git.Ref(cli.Deploy.To))
 		// it's fine to always try to add the subdirectory here because empty
 		// string is the default case anyways
 		d := knife.NewDeployer().
@@ -47,7 +49,7 @@ func main() {
 			fmt.Printf("Failed to deploy changes from diff: '%s'\n", err.Error())
 		}
 	case "preview":
-		differ := git.NewDiffer(git.Ref(cli.From), git.Ref(cli.To))
+		differ := git.NewDiffer(git.Ref(cli.Preview.From), git.Ref(cli.Preview.To))
 		// it's fine to always try to add the subdirectory here because empty
 		// string is the default case anyways
 		d := knife.NewDeployer().

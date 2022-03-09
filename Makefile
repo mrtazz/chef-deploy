@@ -20,6 +20,8 @@ LDFLAGS := -X 'main.version=$(VERSION)' \
 
 .PHONY: build
 build: chef-deploy
+
+.PHONY: chef-deploy
 chef-deploy: chef-deploy.go
 	GOOS=$(BUILD_GOOS) GOARCH=$(BUILD_GOARCH) go build $(GOFLAGS) -ldflags "$(LDFLAGS)" -o $@ $<
 .DEFAULT_GOAL:=build
