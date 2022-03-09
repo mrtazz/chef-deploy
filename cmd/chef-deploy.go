@@ -1,67 +1,73 @@
 package main
 
 import (
-//"github.com/docopt/docopt-go"
-//"github.com/mrtazz/chef-deploy/pkg/git"
-//"github.com/mrtazz/chef-deploy/pkg/version"
-//"log"
-//"os"
+	"fmt"
+	"github.com/alecthomas/kong"
+	"github.com/mrtazz/chef-deploy/pkg/deploy/knife"
+	"github.com/mrtazz/chef-deploy/pkg/git"
+	"os"
 )
 
 var (
-	usage = `chef-deploy.
-
-  Usage:
-  chef-deploy deploy --from=<from> --to=<to> [options]
-  chef-deploy preview --from=<from> --to=<to> [options]
-  chef-deploy -h | --help
-  chef-deploy --version
-
-  Options:
-  --from=<from>                 base SHA of the diff to deploy
-  --to=<to>                     head SHA of the diff to deploy
-  --knife-executable=<knife>    the knife executable to use
-  --subdirectory=<subdirectory> the subdirectory of the repo that contains chef code
-  -h --help                     Show this screen.
-  --version                     Show version.
-`
-
-	isDebug = false
+	version   = "unknown"
+	goversion = "unknown"
+	cli       struct {
+		From            string `help:"start ref for generating changes diff"`
+		To              string `help:"end ref for generating changes diff"`
+		Subdirectory    string `help:"subdirectory where chef code is located"`
+		KnifeExecutable string `help:"the knife executable to use"`
+		Deploy          struct {
+		} `cmd:"" help:"deploy changes."`
+		Preview struct {
+		} `cmd:"" help:"preview deploy changes but don't deploy."`
+		Version struct {
+		} `cmd:"" help:"print version and exit."`
+	}
 )
 
 func main() {
-	//	args, err := docopt.Parse(usage, nil, true,
-	//		version.GetDocoptVersionString("chef-deploy"), false)
-	//	if err != nil {
-	//		log.Fatal(err)
-	//	}
-	//
-	//	if args["--knife-executable"] != nil {
-	//		chef.KnifeExecutable = args["--knife-executable"].(string)
-	//	}
-	//
-	//	if args["--subdirectory"] != nil {
-	//		chef.Subdirectory = args["--subdirectory"].(string)
-	//	}
-	//
-	//	if args["preview"].(bool) {
-	//		err = chef.PreviewChanges(git.Ref(args["--from"].(string)),
-	//			git.Ref(args["--to"].(string)))
-	//
-	//		if err != nil {
-	//			log.Println(err.Error())
-	//			os.Exit(1)
-	//		}
-	//	}
-	//
-	//	if args["deploy"].(bool) {
-	//		err = chef.DeployChanges(git.Ref(args["--from"].(string)),
-	//			git.Ref(args["--to"].(string)))
-	//
-	//		if err != nil {
-	//			log.Println(err.Error())
-	//			os.Exit(1)
-	//		}
-	//	}
-
+	ctx := kong.Parse(&cli)
+	switch ctx.Command() {
+	case "deploy":
+		differ := git.NewDiffer(git.Ref(cli.From), git.Ref(cli.To))
+		// it's fine to always try to add the subdirectory here because empty
+		// string is the default case anyways
+		d := knife.NewDeployer().
+			WithSubdirectory(cli.Subdirectory)
+		// we don't want to accidentally unset the executable, so only do this if
+		// the option was passed
+		if cli.KnifeExecutable != "" {
+			d = d.WithKnifeExecutable(cli.KnifeExecutable)
+		}
+		changes, err := differ.Diff()
+		if err != nil {
+			fmt.Printf("Failed to generate changes from diff: '%s'\n", err.Error())
+		}
+		if err = d.DeployChanges(changes); err != nil {
+			fmt.Printf("Failed to deploy changes from diff: '%s'\n", err.Error())
+		}
+	case "preview":
+		differ := git.NewDiffer(git.Ref(cli.From), git.Ref(cli.To))
+		// it's fine to always try to add the subdirectory here because empty
+		// string is the default case anyways
+		d := knife.NewDeployer().
+			WithSubdirectory(cli.Subdirectory)
+		// we don't want to accidentally unset the executable, so only do this if
+		// the option was passed
+		if cli.KnifeExecutable != "" {
+			d = d.WithKnifeExecutable(cli.KnifeExecutable)
+		}
+		changes, err := differ.Diff()
+		if err != nil {
+			fmt.Printf("Failed to generate changes from diff: '%s'\n", err.Error())
+		}
+		if err = d.PreviewChanges(changes); err != nil {
+			fmt.Printf("Failed to preview changes from diff: '%s'\n", err.Error())
+		}
+	case "version":
+		fmt.Printf("chef-deploy %s built for %s\n", version, goversion)
+	default:
+		fmt.Println("Unknown command: " + ctx.Command())
+		os.Exit(1)
+	}
 }

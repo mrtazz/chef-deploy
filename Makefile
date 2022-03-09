@@ -6,8 +6,8 @@ VERSION := $(shell git describe --tags --always --dirty)
 GOVERSION := $(shell go version)
 
 GOFLAGS :=
-LDFLAGS := -X 'github.com/mrtazz/chef-deploy/pkg/version.version=$(VERSION)' \
-           -X 'github.com/mrtazz/chef-deploy/pkg/version.goversion=$(GOVERSION)'
+LDFLAGS := -X 'main.version=$(VERSION)' \
+           -X 'main.goversion=$(GOVERSION)'
 
 .PHONY: build
 build:
