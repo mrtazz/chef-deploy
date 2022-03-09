@@ -18,11 +18,14 @@ GOFLAGS :=
 LDFLAGS := -X 'main.version=$(VERSION)' \
            -X 'main.goversion=$(GOVERSION)'
 
-.PHONY: build
-build: chef-deploy
+$(RELEASE_ARTIFACTS_DIR):
+	install -d $@
 
-.PHONY: chef-deploy
-chef-deploy: chef-deploy.go
+.PHONY: build
+build: $(NAME)
+
+.PHONY: $(NAME)
+$(NAME): chef-deploy.go
 	GOOS=$(BUILD_GOOS) GOARCH=$(BUILD_GOARCH) go build $(GOFLAGS) -ldflags "$(LDFLAGS)" -o $@ $<
 .DEFAULT_GOAL:=build
 
@@ -41,9 +44,9 @@ benchmark:
 	@go test $(GOFLAGS) -bench=. ${NAME}
 
 .PHONY: build-artifact
-build-artifact: certcal $(RELEASE_ARTIFACTS_DIR)
-	mv certcal $(RELEASE_ARTIFACTS_DIR)/certcal-$(VERSION).$(BUILD_GOOS).$(BUILD_GOARCH)
-	cd $(RELEASE_ARTIFACTS_DIR) && shasum -a 256 certcal-$(VERSION).$(BUILD_GOOS).$(BUILD_GOARCH) >> $(CHECKSUM_FILE)
+build-artifact: $(NAME) $(RELEASE_ARTIFACTS_DIR)
+	mv $(NAME) $(RELEASE_ARTIFACTS_DIR)/$(NAME)-$(VERSION).$(BUILD_GOOS).$(BUILD_GOARCH)
+	cd $(RELEASE_ARTIFACTS_DIR) && shasum -a 256 $(NAME)-$(VERSION).$(BUILD_GOOS).$(BUILD_GOARCH) >> $(CHECKSUM_FILE)
 
 .PHONY: github-release
 github-release:
