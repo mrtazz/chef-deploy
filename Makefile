@@ -2,34 +2,57 @@
 # some housekeeping tasks
 #
 
+NAME := chef-deploy
+DESC := tool to deploy changes to a Chef server based on a git diff
 VERSION := $(shell git describe --tags --always --dirty)
 GOVERSION := $(shell go version)
 
-GOFLAGS := -mod=vendor
-LDFLAGS := -X 'github.com/mrtazz/chef-deploy/pkg/version.version=$(VERSION)' \
-           -X 'github.com/mrtazz/chef-deploy/pkg/version.goversion=$(GOVERSION)'
 
-build:
-	go build $(GOFLAGS) -ldflags "$(LDFLAGS)" cmd/chef-deploy.go
+BUILD_GOOS ?= $(shell go env GOOS)
+BUILD_GOARCH ?= $(shell go env GOARCH)
 
-vendor:
-	go mod vendor
+RELEASE_ARTIFACTS_DIR := .release_artifacts
+CHECKSUM_FILE := checksums.txt
 
+GOFLAGS :=
+LDFLAGS := -X 'main.version=$(VERSION)' \
+           -X 'main.goversion=$(GOVERSION)'
+
+$(RELEASE_ARTIFACTS_DIR):
+	install -d $@
+
+.PHONY: build
+build: $(NAME)
+
+.PHONY: $(NAME)
+$(NAME): chef-deploy.go
+	GOOS=$(BUILD_GOOS) GOARCH=$(BUILD_GOARCH) go build $(GOFLAGS) -ldflags "$(LDFLAGS)" -o $@ $<
+.DEFAULT_GOAL:=build
+
+.PHONY: test
 test:
-	go test $(GOFLAGS) -v $$(go list $(GOFLAGS) ./... | grep -v /cmd/)
+	go test $(GOFLAGS) -v ./...
 
+.PHONY: coverage
 coverage:
-	@echo "mode: set" > cover.out
-	@for package in $(PACKAGES); do \
-		if ls $${package}/*.go &> /dev/null; then  \
-		go test $(GOFLAGS) -coverprofile=$${package}/profile.out $${package}; fi; \
-		if test -f $${package}/profile.out; then \
-		cat $${package}/profile.out | grep -v "mode: set" >> cover.out; fi; \
-	done
-	@-go tool $(GOFLAGS) cover -html=cover.out -o cover.html
+	go test $(GOFLAGS) -coverprofile=cover.out ./...
+	go tool $(GOFLAGS) cover -html=cover.out -o cover.html
 
+.PHONY: benchmark
 benchmark:
 	@echo "Running tests..."
 	@go test $(GOFLAGS) -bench=. ${NAME}
 
-.DEFAULT_GOAL:=build
+.PHONY: build-artifact
+build-artifact: $(NAME) $(RELEASE_ARTIFACTS_DIR)
+	mv $(NAME) $(RELEASE_ARTIFACTS_DIR)/$(NAME)-$(VERSION).$(BUILD_GOOS).$(BUILD_GOARCH)
+	cd $(RELEASE_ARTIFACTS_DIR) && shasum -a 256 $(NAME)-$(VERSION).$(BUILD_GOOS).$(BUILD_GOARCH) >> $(CHECKSUM_FILE)
+
+.PHONY: github-release
+github-release:
+	gh release create $(VERSION) --title 'Release $(VERSION)' --notes-file docs/releases/$(VERSION).md $(RELEASE_ARTIFACTS_DIR)/*
+
+# clean up tasks
+.PHONY: clean
+clean:
+	git clean -fdx
